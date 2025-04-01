@@ -14,7 +14,7 @@ const router = express.Router();
  * @returns 500 - if there is an error in the database
  */
 router.get('/', async (req, res) => {
-  const id = req.query.id as string;
+  const id = escapeHTML(req.query.id as string);
   try {
     const [book, copies] = await Promise.all([
       Book.getBook(id),
@@ -36,5 +36,19 @@ router.get('/', async (req, res) => {
     res.status(500).send(`Error fetching book ${id}`);
   }
 });
+
+/**
+ * sanitize input to prevent XSS attacks
+ * @param input 
+ * @returns input with HTML special characters escaped
+ */
+function escapeHTML(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 export default router;
